@@ -1,22 +1,219 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
 
-    <!-- update the version number as needed -->
-    <script defer src="/__/firebase/7.2.1/firebase-app.js"></script>
-    <!-- include only the Firebase features as you need -->
-    <script defer src="/__/firebase/7.2.1/firebase-auth.js"></script>
-    <script defer src="/__/firebase/7.2.1/firebase-database.js"></script>
-    <script defer src="/__/firebase/7.2.1/firebase-messaging.js"></script>
-    <script defer src="/__/firebase/7.2.1/firebase-storage.js"></script>
-    <!-- initialize the SDK after all desired features are loaded -->
-    <script defer src="/__/firebase/init.js"></script>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
 
-    
-  </head>
-  <body>
-    gametime bitch
-  </body>
+  <!-- update the version number as needed -->
+  <script defer src="/__/firebase/7.2.1/firebase-app.js"></script>
+  <!-- include only the Firebase features as you need -->
+  <script defer src="/__/firebase/7.2.1/firebase-auth.js"></script>
+  <script defer src="/__/firebase/7.2.1/firebase-database.js"></script>
+  <script defer src="/__/firebase/7.2.1/firebase-messaging.js"></script>
+  <script defer src="/__/firebase/7.2.1/firebase-storage.js"></script>
+  <!-- initialize the SDK after all desired features are loaded -->
+  <script defer src="/__/firebase/init.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/7.2.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/7.2.1/firebase-analytics.js"></script>
+
+  <!-- Bootstrap -->
+  <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
+    crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1"
+    crossorigin="anonymous"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM"
+    crossorigin="anonymous"></script>
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T"
+    crossorigin="anonymous">
+  <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
+
+
+  <!-- Javascript controller file -->
+  <script type="text/javascript" src="controller.js"></script>
+
+  <!-- CSS File -->
+  <link rel="stylesheet" href="index.css">
+
+
+</head>
+
+<body>
+  <!-- Javascript controller file -->
+  <script src="controller.js"></script>
+  <nav class="navbar navbar-light" id="navbar">
+    <ul class="navbar-nav mr-auto">
+    </ul>
+    <a class="navbar-brand mx-auto">
+      <img src="images/logo.png" style="max-width: 100px;">
+    </a>
+    <ul class="navbar-nav ml-auto">
+      <a class="navbar-brand" data-toggle="modal" data-target="#exampleModalCenter">Login</a>
+    </ul>
+  </nav>
+  <div class="container-fluid">
+    <!-- Login Modal -->
+    <div class="modal fade" id="exampleModalCenter" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle"
+      aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="exampleModalLongTitle">Login</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            <p>Sign in with Google</p>
+            <button onclick="signInWithGoogle()" data-dismiss="modal">Google</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Content that will be shown -->
+    <div data-page="content" id="display">
+      <div class="loginInfo">
+        <h1>Welcome to Jaddit!</h1>
+        <h5>Jaddit was built as a project for CISC472. The project itself was built solely with HTML, JS and CSS with a
+          Firebase database to handle information.</h6>
+          <h6>It is supposed to represent reddit.</h6>
+          <h6>Heres my linkedin, github and also a video of a red panda if you're having one of those days.</h6>
+          <div id="someLinks">
+            <a href="https://www.linkedin.com/in/john-maloy-0b7709168/">
+              <img src="images/linkedin.png">
+            </a>
+            <a href="https://github.com/jmaloyjr" id="githubImage">
+              <img src="images/git.png">
+            </a>
+            <a href="https://www.youtube.com/watch?v=hPKab2d4_Xw">
+              <img src="images/rp.png">
+            </a>
+          </div>
+      </div>
+    </div>
+
+    <!-- JADDIT HOME -->
+    <div data-page="template" id="jadditHome">
+      <div class="row">
+        <div class="col-3">
+          <!-- Modal -->
+          <button data-toggle="modal" data-target="#createTopicModal">Create Topic</button>
+          <div class="modal fade" id="createTopicModal" tabindex="-1" role="dialog" aria-labelledby="createTopicCenterTile"
+            aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered" role="document">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h5 class="modal-title" id="createTopicCenterTile">Create New Topic</h5>
+                  <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                  </button>
+                </div>
+                <div class="modal-body">
+                  <form>
+                    <div class="form-group">
+                      <label for="topicTitle">Topic Title</label>
+                      <input type="text" class="form-control" id="topicTitle" placeholder="Title">
+                    </div>
+                    <div class="form-group">
+                      <label for="topicImage">Image</label>
+                      <input type="text" class="form-control" id="topicImage" placeholder="Image URL">
+                    </div>
+                    <div class="form-group">
+                      <label for="topicBlurb">Blurb</label>
+                      <input type="text" class="form-control" id="topicBlurb" placeholder="Blurb">
+                    </div>
+                    <div class="form-group">
+                      <label for="topicLink">Link</label>
+                      <input type="text" class="form-control" id="topicLink" placeholder="Link">
+                    </div>
+                    <button type="button" onclick="createTopic()" class="btn btn-outline-primary" data-dismiss="modal">Create
+                      Topic</button>
+                  </form>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- Topics -->
+        <div class="col-9">
+          <ul id="topics"></ul>
+        </div>
+      </div>
+
+      <!-- TOPIC PAGE -->
+      <div data-page="template" id="uniqueTopicPage">
+        <div class="row">
+          <div class="col-2">
+
+            <!-- Create COMMENT Modal -->
+            <button data-toggle="modal" class="btn btn-outline-danger" data-target="#createCommentModal">Comment</button>
+            <!-- Modal -->
+            <div class="modal fade" id="createCommentModal" tabindex="-1" role="dialog" aria-labelledby="createCommentCenterTile"
+              aria-hidden="true">
+              <div class="modal-dialog modal-dialog-centered" role="document">
+                <div class="modal-content">
+                  <div class="modal-header">
+                    <h5 class="modal-title" id="createCommentCenterTile">Create New Comment</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                      <span aria-hidden="true">&times;</span>
+                    </button>
+                  </div>
+                  <div class="modal-body">
+                    <form>
+                      <div class="form-group">
+                        <label for="commentText">Comment</label>
+                        <input type="text" class="form-control" id="commentText" placeholder="Comment">
+                      </div>
+                      <button type="button" id="createCommentBtn" class="btn btn-outline-primary" data-dismiss="modal">Create
+                        Comment</button>
+                    </form>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Create SUBCOMMENT Modal -->
+            <div class="modal fade" id="createSubCommentModal" tabindex="-1" role="dialog" aria-labelledby="createSubCommentCenterTile"
+              aria-hidden="true">
+              <div class="modal-dialog modal-dialog-centered" role="document">
+                <div class="modal-content">
+                  <div class="modal-header">
+                    <h5 class="modal-title" id="createSubCommentCenterTile">Create Sub Comment</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                      <span aria-hidden="true">&times;</span>
+                    </button>
+                  </div>
+                  <div class="modal-body">
+                    <form>
+                      <div class="form-group">
+                        <label for="commentText">Sub Comment</label>
+                        <input type="text" class="form-control" id="subCommentText" placeholder="Sub Comment">
+                      </div>
+                      <button type="button" id="createSubCommentBtn" class="btn btn-outline-primary" data-dismiss="modal">Add Sub Comment</button>
+                    </form>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="col-10">
+              <div id="topic"></div>
+              <div id="topicText"></div>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-2"></div>
+            <div id="comments" class="col-10">
+
+            </div>
+          </div>
+        </div>
+      </div>
+
+
+    </div>
+</body>
+
 </html>
