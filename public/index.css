@@ -5,7 +5,7 @@ body {
 
 nav {
   border-bottom: solid black 1px;
-  padding-bottom: 100px;
+  margin-bottom: 10px;
 }
 
 #display {
@@ -13,8 +13,9 @@ nav {
   height: 100%;
 }
 
-.loginInfo {
- position: absolute;
+
+#loginStuff{
+  position: absolute;
   width: 80%;
   height: 60%;
   top: 50%;
@@ -26,7 +27,7 @@ nav {
   text-align:center;
 }
 
-.loginInfo h1, .loginInfo h5, .loginInfo h6{
+#loginStuff h1, #loginStuff h5, #loginStuff h6{
   padding: 20px;
   text-align:center;
 }
@@ -48,3 +49,27 @@ div[data-page=template] {
 #topics li {
   list-style: none;
 }
+
+#topics div {
+  display: inline-block;
+}
+
+#commentList div {
+  display: inline-block;
+}
+
+#topicContents div {
+  padding: 10px;
+}
+#topic {
+  display: inline-block;
+  margin-bottom: 10px;
+  font-size: 2em;
+}
+#topicText {
+  display: inline-block;
+  margin-bottom: 10px;
+
+}
+
+

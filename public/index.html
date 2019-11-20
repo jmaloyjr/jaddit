@@ -49,32 +49,19 @@
       <img src="images/logo.png" style="max-width: 100px;">
     </a>
     <ul class="navbar-nav ml-auto">
-      <a class="navbar-brand" data-toggle="modal" data-target="#exampleModalCenter">Login</a>
+      <button onclick="signInWithGoogle()" class="btn btn-outline-danger">Login</button>
     </ul>
   </nav>
+
+
   <div class="container-fluid">
-    <!-- Login Modal -->
-    <div class="modal fade" id="exampleModalCenter" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle"
-      aria-hidden="true">
-      <div class="modal-dialog modal-dialog-centered" role="document">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title" id="exampleModalLongTitle">Login</h5>
-            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-              <span aria-hidden="true">&times;</span>
-            </button>
-          </div>
-          <div class="modal-body">
-            <p>Sign in with Google</p>
-            <button onclick="signInWithGoogle()" data-dismiss="modal">Google</button>
-          </div>
-        </div>
-      </div>
-    </div>
 
     <!-- Content that will be shown -->
     <div data-page="content" id="display">
-      <div class="loginInfo">
+    </div>
+
+    <div data-page="template" id="loginPage">
+      <div id="loginStuff">
         <h1>Welcome to Jaddit!</h1>
         <h5>Jaddit was built as a project for CISC472. The project itself was built solely with HTML, JS and CSS with a
           Firebase database to handle information.</h6>
@@ -97,16 +84,16 @@
     <!-- JADDIT HOME -->
     <div data-page="template" id="jadditHome">
       <div class="row">
-        <div class="col-3">
+        <div class="col-2">
           <!-- Modal -->
-          <button data-toggle="modal" data-target="#createTopicModal">Create Topic</button>
+          <button data-toggle="modal" data-target="#createTopicModal" class="btn btn-outline-danger">Create Topic</button>
           <div class="modal fade" id="createTopicModal" tabindex="-1" role="dialog" aria-labelledby="createTopicCenterTile"
             aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered" role="document">
               <div class="modal-content">
                 <div class="modal-header">
                   <h5 class="modal-title" id="createTopicCenterTile">Create New Topic</h5>
-                  <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                  <button type="button" class="close" data-dismiss="modal" aria-label="Close" onclick="clearTopicContents()">
                     <span aria-hidden="true">&times;</span>
                   </button>
                 </div>
@@ -117,16 +104,8 @@
                       <input type="text" class="form-control" id="topicTitle" placeholder="Title">
                     </div>
                     <div class="form-group">
-                      <label for="topicImage">Image</label>
-                      <input type="text" class="form-control" id="topicImage" placeholder="Image URL">
-                    </div>
-                    <div class="form-group">
                       <label for="topicBlurb">Blurb</label>
                       <input type="text" class="form-control" id="topicBlurb" placeholder="Blurb">
-                    </div>
-                    <div class="form-group">
-                      <label for="topicLink">Link</label>
-                      <input type="text" class="form-control" id="topicLink" placeholder="Link">
                     </div>
                     <button type="button" onclick="createTopic()" class="btn btn-outline-primary" data-dismiss="modal">Create
                       Topic</button>
@@ -137,7 +116,7 @@
           </div>
         </div>
         <!-- Topics -->
-        <div class="col-9">
+        <div class="col-10">
           <ul id="topics"></ul>
         </div>
       </div>
@@ -145,8 +124,10 @@
       <!-- TOPIC PAGE -->
       <div data-page="template" id="uniqueTopicPage">
         <div class="row">
-          <div class="col-2">
-
+          <div class="col-1" style="text-align: center;">
+            <i class="fa fa-arrow-left" onclick="backButton()"></i>
+          </div>
+          <div class="col-1" style="text-align: center;">
             <!-- Create COMMENT Modal -->
             <button data-toggle="modal" class="btn btn-outline-danger" data-target="#createCommentModal">Comment</button>
             <!-- Modal -->
@@ -156,14 +137,13 @@
                 <div class="modal-content">
                   <div class="modal-header">
                     <h5 class="modal-title" id="createCommentCenterTile">Create New Comment</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close" onclick="clearCommentContents()">
                       <span aria-hidden="true">&times;</span>
                     </button>
                   </div>
                   <div class="modal-body">
                     <form>
                       <div class="form-group">
-                        <label for="commentText">Comment</label>
                         <input type="text" class="form-control" id="commentText" placeholder="Comment">
                       </div>
                       <button type="button" id="createCommentBtn" class="btn btn-outline-primary" data-dismiss="modal">Create
@@ -181,38 +161,35 @@
                 <div class="modal-content">
                   <div class="modal-header">
                     <h5 class="modal-title" id="createSubCommentCenterTile">Create Sub Comment</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"onclick="clearSubCommentContents()">
                       <span aria-hidden="true">&times;</span>
                     </button>
                   </div>
                   <div class="modal-body">
                     <form>
                       <div class="form-group">
-                        <label for="commentText">Sub Comment</label>
                         <input type="text" class="form-control" id="subCommentText" placeholder="Sub Comment">
                       </div>
-                      <button type="button" id="createSubCommentBtn" class="btn btn-outline-primary" data-dismiss="modal">Add Sub Comment</button>
+                      <button type="button" id="createSubCommentBtn" class="btn btn-outline-primary" data-dismiss="modal">Add
+                        Sub Comment</button>
                     </form>
                   </div>
                 </div>
               </div>
             </div>
-
-            <div class="col-10">
+          </div>
+          <!-- Topic Info -->
+          <div class="col-10">
+            <div id="topicContents">
               <div id="topic"></div>
               <div id="topicText"></div>
             </div>
-          </div>
-          <div class="row">
-            <div class="col-2"></div>
-            <div id="comments" class="col-10">
+            <ul id="commentList">
 
-            </div>
+            </ul>
           </div>
         </div>
       </div>
-
-
     </div>
 </body>
 

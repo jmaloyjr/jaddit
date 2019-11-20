@@ -13,14 +13,26 @@ var firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 firebase.analytics();
 
+//Global user variable
+var user;
+var frontPage;
+$(document).ready(function () {
+  var template = document.getElementById('loginPage').innerHTML;
+  display.innerHTML = template;
+});
+
+var pages = ['loginInfo', 'jadditHome', 'uniqueTopic'];
+
 function signInWithGoogle() {
   var theDB = firebase.database();
   var provider = new firebase.auth.GoogleAuthProvider();
+  firebase.auth().setPersistence(firebase.auth.Auth.Persistence.SESSION);
   firebase.auth().signInWithPopup(provider).then(function (result) {
     // This gives you a Google Access Token. You can use it to access the Google API.
     var token = result.credential.accessToken;
     // The signed-in user info.
     var user = result.user;
+    window.user = user;
     handleLogin(user);
   }).catch(function (error) {
     // Handle Errors here.
@@ -32,23 +44,46 @@ function signInWithGoogle() {
     var credential = error.credential;
   });
 
+
 };
 
 function handleLogin(user) {
   var theDB = firebase.database();
-  console.log(user)
   theDB.ref().child("users/" + user.uid).set({ isadmin: false });
 
   // Clear current page and switch to jadditHome
   var template = document.getElementById('jadditHome').innerHTML;
   display.innerHTML = template
 
-  document.getElementById('navbar').innerHTML = `<a class="navbar-brand">Hello ${user.displayName}</a> <img src="${user.photoURL}" style="height:50px"></img>`;
+  document.getElementById('navbar').innerHTML = `<a class="navbar-brand">Hello ${user.displayName}</a> 
+  <button class="btn btn-outline-danger" id="logout">Logout</button>`;
+  $('#logout').click(function () { logout() });
+
   loadJaddit();
 };
 
+function logout() {
+  window.user = "";
+  var template = document.getElementById('loginPage').innerHTML;
+  display.innerHTML = template;
+
+  //Change navbar
+  document.getElementById('navbar').innerHTML = `<ul class="navbar-nav mr-auto"></ul><a class="navbar-brand mx-auto">
+    <img src="images/logo.png" style="max-width: 100px;"></a>
+    <ul class="navbar-nav ml-auto"><button id="login" onclick="signInWithGoogle()" class="btn btn-outline-danger">Login</button></ul>`;
+
+    $('#login').click(function () { signInWithGoogle() });
+};
+
+function backButton() {
+  var template = document.getElementById('jadditHome').innerHTML;
+  display.innerHTML = template;
+  loadJaddit();
+}
+
 function loadJaddit() {
 
+  console.log('loading');
   var db = firebase.database();
 
   db.ref("topics").on("value", function (snap) {
@@ -57,7 +92,9 @@ function loadJaddit() {
 
     // Iterate through and create new database reference
     Object.keys(topics).forEach(function (key) {
-      var listItem = $(`<div><li><b>${topics[key].title}</b><p>${topics[key].blurb}</p></li></div>`).addClass('listItem').attr('id', key).click(function () { loadUniqueTopics(key) });
+      var listItem = $(`<li class="list-group-item" style="margin-bottom:5px;"><div><b>${topics[key].title}</b></div>
+        <div style="float:right">Author:  <i>${topics[key].author}</i></div>
+        <p>${topics[key].blurb}</p></li>`).addClass('listItem').attr('id', key).click(function () { loadUniqueTopics(key) });
       $("#topics").append(listItem);
     });
   });
@@ -67,21 +104,34 @@ function loadJaddit() {
 function createTopic() {
 
   var topicTitle = $('#topicTitle').val();
-  var topicImage = $('#topicImage').val();
   var topicBlurb = $('#topicBlurb').val();
-  var topicLink = $('#topicLink').val();
 
   let newref = firebase.database().ref("topics").push();
 
   newref.set({
     title: topicTitle,
-    image: topicImage,
     blurb: topicBlurb,
-    link: topicLink,
+    author: window.user.displayName
   });
+
+  document.getElementById('topicTitle').value = "";
+  document.getElementById('topicBlurb').value = "";
 
 
 };
+
+function clearTopicContents(){
+  document.getElementById('topicTitle').value = "";
+  document.getElementById('topicBlurb').value = "";
+}
+
+function clearCommentContents(){
+  document.getElementById('commentText').value = "";
+}
+
+function clearSubCommentContents(){
+  document.getElementById('subCommentText').value = "";
+}
 
 // Load unique topic page
 function loadUniqueTopics(id) {
@@ -96,8 +146,17 @@ function loadUniqueTopics(id) {
   // Load database and all of the comments 
   var db = firebase.database();
 
+  db.ref("topics/" + id).on("value", function (snap) {
+    var topic = snap.val();
+
+    console.log(topic);
+
+    document.getElementById('topic').innerText = topic.title;
+    document.getElementById('topicText').innerText = topic.blurb;
+  });
+
   db.ref("comments").on("value", function (snap) {
-    $("#comments").empty();
+    $("#commentList").empty();
     var allComments = snap.val();
 
     // Iterate through all comments to get only comments for specific topic
@@ -109,54 +168,80 @@ function loadUniqueTopics(id) {
 
     // Now make sure each comment displays the right infromation
     Object.keys(allComments).forEach(function (key) {
-      var comment = $(`<div id="${key}"><p>${allComments[key].commentText}</p>
-        <button data-toggle="modal" type="button"  data-target="#createSubCommentModal" id="${key}Button" onclick="updateParentReference('${key}')"  
-        class="btn btn-default"><span class="fa fa-plus" aria-hidden="true"></span></button></div>`);
-      
-      $("#comments").append(comment);
-      if(allComments[key].subcomments != null){
-        loadSubComments(key);
+
+      var likes = 0;
+      var likeColor;
+      //If statement for if user liked it already
+      if (allComments[key].votes != null) {
+        Object.keys(allComments[key].votes).forEach(function (vote) {
+          if (allComments[key].votes[vote].voter == window.user.uid) {
+            likeColor = 'red';
+          };
+          likes++;
+        });
+      };
+
+      var comment = $(`<div id="${key}" style="width:100%" ><li class="list-group-item" style="margin-bottom:5px;">
+      <div><p>${allComments[key].commentText}</p></div>
+      <div style="float:right"><button data-toggle="modal" type="button"  data-target="#createSubCommentModal" id="${key}Button" onclick="updateParentReference('${key}')"  
+      class="btn btn-default"><span class="fa fa-plus" aria-hidden="true"></span></button><button type="button" id="${key}LikeButton" onclick="likeComment('${key}')"  
+      class="btn btn-default"><i class="fa fa-thumbs-o-up"  style="color:${likeColor}" aria-hidden="true"></i></button>${likes}</div></li></div>`)
+
+      $("#commentList").append(comment);
+      if (allComments[key].subcomments != null) {
+        var path = 'comments/' + key + '/subcomments/';
+        loadSubComments(key, path);
       };
     });
-
   });
+};
 
+function loadSubComments(commentid, commentPath) {
+  var db = firebase.database();
 
+  db.ref(commentPath).on("value", function (snap) {
+    var subComments = snap.val();
+    recursiveSubLoader(commentid, subComments);
+  });
 };
 
 // Some weird function to update the reference point of the button
-function updateParentReference(parentid){
-  console.log(parentid);
-  document.getElementById('createSubCommentBtn').onclick = function(){
+function updateParentReference(parentid) {
+  document.getElementById('createSubCommentBtn').onclick = function () {
     createSubComment(parentid);
   };
 };
 
 // Recursive function to load comments 
-function recursiveSubLoader(subs, parentID){
-  Object.keys(subs).forEach(function(key){
-    
+function recursiveSubLoader(parentID, subComments) {
+  Object.keys(subComments).forEach(function (key) {
 
-    var subcomment =  $(`<div id="${key}"><p>${subs[key].commentText}</p>
-    <button data-toggle="modal" type="button"  data-target="#createSubCommentModal" id="${key}Button" onclick="updateParentReference('${key}')"  
-    class="btn btn-default"><span class="fa fa-plus" aria-hidden="true"></span></button></div>`);
+    var likes = 0;
+    var likeColor;
+    //If statement for if user liked it already
+    if (subComments[key].votes != null) {
+      Object.keys(subComments[key].votes).forEach(function (vote) {
+        if (subComments[key].votes[vote].voter == window.user.uid) {
+          likeColor = 'red';
+        };
+        likes++;
+      });
+    }
+
+    var subcomment = $(`<div id="${key}" style="width:95%; float: right;" ><li class="list-group-item" style="margin-bottom:5px;">
+    <div><p>${subComments[key].commentText}</p></div>
+    <div style="float:right"><button data-toggle="modal" type="button"  data-target="#createSubCommentModal" id="${key}Button" onclick="updateParentReference('${key}')"  
+    class="btn btn-default"><span class="fa fa-plus" aria-hidden="true"></span></button><button type="button" id="${key}LikeButton" onclick="likeComment('${key}')"  
+    class="btn btn-default"><i class="fa fa-thumbs-o-up" style="color:${likeColor}" aria-hidden="true"></i></button>${likes}</div></li></div>`)
 
     $(`#${parentID}`).append(subcomment);
 
-    if(subs[key].subcomments != null){
-      recursiveSubLoader(subs[key].subcomments);
+    if (subComments[key].subcomments != null) {
+      recursiveSubLoader(key, subComments[key].subcomments);
     }
   });
 };
 
-function loadSubComments(commentid){
-  var db = firebase.database();
-
-  db.ref('comments/' + commentid + '/subcomments').on("value", function (snap) {
-    var subs = snap.val();
-    recursiveSubLoader(subs, commentid);
-  });
-};
 
 // Used to create a new comment with a parent id given
 function createNewComment(id) {
@@ -165,21 +250,94 @@ function createNewComment(id) {
 
   newref.set({
     parentID: id,
-    commentText: commentTxt
+    commentText: commentTxt,
+    author: window.user.displayName
   });
+
+  document.getElementById('commentText').value = "";
+
 }
 
-// Used to create subcomments
-function createSubComment(commentid){
-  let newref = firebase.database().ref('comments/' + commentid + '/subcomments').push();
-  var commentTxt = $('#subCommentText').val();
+var path = "";
 
-  // FIND WAY TO CREATE SUBCOMMENT OF SUBCOMMENT EASILY
+// Used to create subcomments
+function createSubComment(commentid) {
+
+  let db = firebase.database();
+
+  db.ref("comments").on("value", function (snap) {
+    var allComments = snap.val();
+    window.path = 'comments/';
+
+    getPath(window.path, allComments, commentid);
+
+  });
+
+  let newref = firebase.database().ref(window.path + '/subcomments/').push();
+  var commentTxt = $('#subCommentText').val();
 
   newref.set({
     parentID: commentid,
-    commentText: commentTxt
+    commentText: commentTxt,
+    author: window.user.displayName
+
   });
 
   document.getElementById('subCommentText').value = "";
+
 };
+
+// Used to search JSON obj to find path of node
+function getPath(path, obj, target) {
+  for (var thing in obj) {
+    // Initial Check
+    if (thing == target) {
+      window.path = path + target;
+    } else if (obj[thing].hasOwnProperty('subcomments')) {
+      getPath(path + thing + '/subcomments/', obj[thing].subcomments, target);
+    }
+  }
+};
+
+// Used to like comment
+function likeComment(commentID) {
+
+  //Find path of obj
+  let db = firebase.database();
+  db.ref("comments").on("value", function (snap) {
+    var allComments = snap.val();
+    window.path = 'comments/';
+    getPath(window.path, allComments, commentID);
+  });
+
+  var comment;
+
+  db.ref(window.path).on("value", function (snap) {
+    comment = snap.val();
+  });
+
+  if (comment.hasOwnProperty('votes')) {
+    var allVotes = comment.votes;
+    var bool = true;
+    Object.keys(allVotes).forEach(function (vote) {
+      if (allVotes[vote].voter == window.user.uid) {
+        db.ref(window.path + '/votes/' + vote).remove();
+        bool = false;
+      }
+    });
+    if (bool == true) {
+      let newref = db.ref(window.path + '/votes/').push();
+      newref.set({
+        voter: window.user.uid
+      });
+    }
+
+  } else {
+    // No votes for this comment so add one
+    let newref = db.ref(window.path + '/votes/').push();
+    newref.set({
+      voter: window.user.uid
+    });
+  }
+}
+
